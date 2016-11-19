@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 
 /**
@@ -22,10 +23,8 @@ public class Parser {
 		
 	}
 	
-	
-	
 
-	public ArrayList<String> letters() {
+	public ArrayList<String> getLetters() {
 		
 		ArrayList<String> letters = new ArrayList<String>();
 
@@ -46,7 +45,7 @@ public class Parser {
 				if (  iChar.matches("(\\w)")  ) {
 					
 					// and if it isn't an underscore
-					if ( !iChar.equals("_") ) {
+					if ( !iChar.equals("_") && iChar.matches("(\\D)") ) {
 						
 						// add it to the ArrayList
 						letters.add(iChar);
@@ -54,11 +53,45 @@ public class Parser {
 				}
 			}
 		}
-		
 		return letters;
-		
 	}
 	
+	
+	
+	public ArrayList<String> getWords() {
+		ArrayList<String> words = new ArrayList<String>();
+		Pattern betweenWords = Pattern.compile(" ");
+		
+		// for each element of the Book object...
+		for ( int b = 0; b < book.getText().size(); b++ ) {
+			
+			// we're going to refer to that element as "text" for a bit to make things simple
+			String text = " " + book.getText().get(b) + " ";
+			
+			// now we'll convert that element (it's a String representing a paragraph) to:
+			//  - an array String objects, each element now representing a word
+			
+			// split at patterns: 
+			//  - at least one non-word character
+			String[] arrayOfWords = text.split("\\W+ +\\W+|\\W+ +| +\\W| +|");
+			
+			// for each element in the array of words...
+			for ( int i = 0; i < arrayOfWords.length; i++ ) {
+				
+				// set the current element as the working item iWord
+				String iWord = arrayOfWords[i];
+				
+				// if the element is not a digit
+//				String alpha = iWord.substring(0,1);
+				if (  !iWord.matches("\\d*")  ) {						
+						// add it to the ArrayList
+						words.add(iWord);
+				}
+			}
+		}
+		return words;
+
+	}
 	
 
 }
