@@ -29,24 +29,32 @@ public class Book {
 	/**
 	 * This constructor builds a "sample book"
 	 */
-	public Book () {
-	
-		text = new ArrayList<String>();
-		text.add("'It was one of those cases where you approve the broad, general principle of an idea " +
-				"but can't help being in a bit of a twitter at the prospect of putting it into practical effect. " + 
-				"I explained this to Jeeves, and he said much the same thing had bothered Hamlet.'");
-		text.add("There was quiet satifaction in the butler's voice. It was even possible, "
-				+ "he was reflecting, that this young man might be struck by lightning. If so, " +
-				"it was all right with Beach. As far as he was concerned, Nature's awful majesty " +
-				"could go to the limit.");
-		text.add("I mean, imagine how some _unfortunate Master Criminal_ would feel, on coming down " +
-				"to do a murder at the old Grange, if he found that not only was Sherlock Holmes " +
-				"putting in the weekend there, but Hercule Poirot, as well.");
-		text.add("I mean, if you're asking a fellow to come out of a room so that you can " +
-				"dismember him with a carving knife, it's absurd to tack a 'sir' on to " +
-				"every sentence. The two things don't go together.");
-		
-	}
+//	public Book () {
+//	
+//		text = new ArrayList<String>();
+//		text.add("Chapter 1");
+//		text.add("'It was one of those cases where you approve the broad, general principle of an idea " +
+//				"but can't help being in a bit of a twitter at the prospect of putting it into practical effect. " + 
+//				"I explained this to Jeeves, and he said much the same thing had bothered Hamlet.'");
+//		text.add("Chapter 2");
+//		text.add("There was quiet satifaction in the butler's voice. It was even possible, "
+//				+ "he was reflecting, that this young man might be struck by lightning. If so, " +
+//				"it was all right with Beach. As far as he was concerned, Nature's awful majesty " +
+//				"could go to the limit.");
+//		text.add("Chapter 3");
+//		text.add("I mean, imagine how some _unfortunate Master Criminal_ would feel, on coming down " +
+//				"to do a murder at the old Grange, if he found that not only was Sherlock Holmes " +
+//				"putting in the weekend there, but Hercule Poirot, as well.");
+//		text.add("Chapter 4");
+//		text.add("I mean, if you're asking a fellow to come out of a room so that you can " +
+//				"dismember him with a carving knife, it's absurd to tack a 'sir' on to " +
+//				"every sentence. The two things don't go together.");
+//		text.add("Chapter 5");
+//		text.add("Mix me a b.-and-s., Jeeves. I feel weak.");
+//
+//		
+//		
+//	}
 	
 	/**
 	 * The getParagraph method scans each element in the ArrayList and determines paragraph breaks 
@@ -66,6 +74,9 @@ public class Book {
 		// characters they are combined in index k and index k+1 is deleted. As this loop evaluates 
 		// k+1 it stops when k is one less than the last element.
 		while ( k < text.size()-1 ) {
+			
+			text.set(k, text.get(k).trim());
+			text.set(k+1, text.get(k+1).trim());
 			
 			Matcher matchk = pattern.matcher(text.get(k));
 			
