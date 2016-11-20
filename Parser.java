@@ -1,5 +1,7 @@
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 
 /**
@@ -12,6 +14,27 @@ public class Parser {
 	
 	private Book book;
 	
+	private ArrayList<String> quotes;
+	
+	/*
+	 * The following patterns and Strings are used to match regular expression patterns in the text.
+	 * All patterns are done twice, once for texts that use double quotation marks as the 
+	 * primary token for dialogue, and once for text that use single quotation marks as such.
+	 * (This is subsequently referred to as American (double) and British (single) style.)
+	 */ 
+	private Pattern allDoubleQuotes = Pattern.compile("[\"](.*)[\"]");
+	private Pattern allSingleQuotes = Pattern.compile("[\'](.*)[\']");
+	private Pattern startsDoubleQuotes = Pattern.compile("[\"](.*)[\"].*");
+	private Pattern startsSingleQuotes = Pattern.compile("[\'](.*)[\'].*");
+
+	// used to select text that is in but not part of a quotation such as "he said" from "'Hello,' he said"
+	// (this pattern is such that it does not remove characters or words connected with an apostrophe)
+	private String notQuotationDouble = "\"+\\W+[^\"]*\\B\"+\\b";
+	private String notQuotationSingle = "'+\\W+[^']*\\B'+\\b";	
+	
+	private String leadingNonQuoteAmerican = "[^\"]*\\B\"";
+	private String leadingNonQuoteBritish = "[^']*\\B'";
+	
 	/**
 	 * This is the constructor for the Parser class. It takes a book as an argument.
 	 * The book in an instance of the parser class can be parsed in various ways through its 
@@ -23,7 +46,13 @@ public class Parser {
 		
 	}
 	
+	
+	
+	
+	
 	/**
+	 * Get all the LETTERS!
+	 * 
 	 * This method  evaluates the Book object held by the instance of this Parser and 
 	 * returns an ArrayList of Strings, each element holding a single letter character.
 	 * 
@@ -32,8 +61,7 @@ public class Parser {
 	 * 
 	 * A letter is defined as a character appearing in the English alphabet.
 	 * 
-	 * A 
-	 * @return
+	 * @return an ArrayList of Strings, each String containing one letter character.
 	 */
 	public ArrayList<String> getLetters() {
 		
@@ -69,6 +97,8 @@ public class Parser {
 	
 	
 	/**
+	 * Get all the WORDS!
+	 * 
 	 * This method evaluates the Book object held by the instance of this Parser and 
 	 * returns an ArrayList of every individual word in the Book object. Each 
 	 * word will appear as many times in the ArrayList as it appeared in the Book.
@@ -139,6 +169,202 @@ public class Parser {
 		return words;
 
 	}
+	
+	
+	/**
+	 * Get all the QUOTES!
+	 * 
+	 * 
+	 * 
+	 * @return an ArrayList of Strings with each String containing one quote.
+	 */
+	public ArrayList<String> getQuotations() {
+		
+
+//		Pattern allDoubleQuotes = Pattern.compile("[\"](.*)[\"]");
+//		Pattern allSingleQuotes = Pattern.compile("[\'](.*)[\']");
+//		Pattern startsDoubleQuotes = Pattern.compile("[\"](.*)[\"].*");
+//		Pattern startsSingleQuotes = Pattern.compile("[\'](.*)[\'].*");
+//		String notQuotationDouble = "\"+\\W+[^\"]*\\B\"+\\b";
+//		String notQuotationSingle = "'+\\W+[^']*\\B'+\\b";		
+		
+		quotes = new ArrayList<String>();
+		
+		// for every element in the book (ie for every paragraph)...
+		for (int i = 0; i < book.getText().size(); i++) {
+			
+			/*
+			 * Most of the books in this program use American style punctuation for quotes, but 
+			 * not all. This boolean is assumed true but it is set as false if a paragraph 
+			 * appears that starts and ends with single quotes.
+			 */
+			boolean americanStyleQuotes = true;
+
+			// let's refer to the current String as "text"
+			String text = book.getText().get(i);
+			
+			
+			////// AMERICAN QUOTATIONS AT START & END
+			////// if paragraph format is: "...." (starts and ends with double quotes)
+			if ( text.startsWith("\"") && text.endsWith("\"") ) {
+				
+				americanStyleQuotes = true;
+				
+				Matcher match = allDoubleQuotes.matcher(text);
+				if (match.matches()) {
+					// the patterns are set to provide the desired match in match.group(1)
+					text = match.group(1);
+					touchUpAndAddAmerican(text, quotes);
+				} else {
+					// do nothing
+				}
+				
+			////// BRITISH QUOTATIONS AT START & END		
+			///// if paragraph format is: '....' (starts and ends with single quotation marks)	
+			} else if (text.startsWith("\'") && text.endsWith("\'")) {
+				
+				americanStyleQuotes = false;
+				
+				Matcher match = allSingleQuotes.matcher(text);
+				if (match.matches()) {
+					// the patterns are set to provide the desired match in match.group(1)
+					text = match.group(1);
+					touchUpAndAddBritish(text, quotes);
+				} else {
+					// do nothing
+				}
+				
+				
+			////// AMERICAN QUOTATIONS AT START
+			/// if paragraph format is: "..."... (starts with double quotes)	
+			}  else if ( text.startsWith("\"") ) {
+				
+				/*
+				 * The following counter, for loop, and if statement determine instances where a paragraph
+				 * begins with a quotation mark and include no other quotation marks.
+				 * This program handles such cases my taking them as a single, entire quote.
+				 */
+				int count = 0;
+				for ( int h = 1; h < text.length(); h++ ) {
+					if ( text.substring(h,h+1).equalsIgnoreCase("\"") ) {
+						count++;
+					}
+				}
+				if ( count == 0 ) {
+					quotes.add(text + "\"");
+					
+				// For regular cases when a quotation is opened and closed in the paragraph:	
+				} else {
+					Matcher match = startsDoubleQuotes.matcher(text);
+					if (match.matches()) {
+						// the patterns are set to provide the desired match in match.group(1)
+						text = match.group(1);
+						touchUpAndAddAmerican(text, quotes);	
+					} else {
+						// do nothing
+					}
+				}
+				
+			////// BRITISH QUOTATIONS AT START
+			/// if paragraph format is: '...'... (starts with single quotes)					
+			} else if ( text.startsWith("\'") ) {
+				
+				
+				/*
+				 * The following counter, for loop, and if statement determine instances where a paragraph
+				 * begins with a quotation mark and include no other quotation marks.
+				 * This program handles such cases my taking them as a single, entire quote.
+				 * 
+				 * A particular note for British style quotations: apostrophes within a word will not 
+				 * be parsed, but if an apostrophe falls at the end of a word it will be treated as a 
+				 * quotation mark.
+				 */
+				int count = 0;
+				for ( int h = 1; h < text.length()-1; h++ ) {
+					if ( text.substring(h,h+2).equalsIgnoreCase(" '") || text.substring(h,h+2).equalsIgnoreCase("' ") ) {
+						count++;
+					}
+				}
+				if ( count == 0 ) {
+					quotes.add(text + "'");
+					
+				// For regular cases when a quotation is opened and closed in the paragraph:	
+				} else {
+					Matcher match = startsSingleQuotes.matcher(text);
+					if (match.matches()) {
+						// the patterns are set to provide the desired match in match.group(1)
+						text = match.group(1);
+						touchUpAndAddBritish(text, quotes);	
+					} else {
+						// do nothing
+					}
+				}
+			
+			/*
+			 * AMERICAN QUOTATIONS WITHIN
+			 * if paragraph format is: ...."....".... (contains double quotes within it)
+			 *
+			 * The getQuotes method uses the presence of paragraphs in the text that start and 
+			 * end with double or single quotes to set the boolean americanStyleQuotes.
+			 * 
+			 * True is the default setting.
+			 * 
+			 * (NOTE: In some fringe cases this setting could be incorrect for the text being scanned 
+			 * and the quotations from that paragraph would not be pulled correctly, but cases 
+			 * will be few and the total effect of those cases will be confined to the parsing 
+			 * of only one paragraph.)
+			 * 
+			 */
+			} else if (americanStyleQuotes) {
+				
+				
+				// remove the first part of the paragraph all the way up to the beginning of the quotation
+				text = text.replaceFirst(leadingNonQuoteAmerican, "\"");
+				
+				// after the non-quotation part is removed the element can be handled in the 
+				// same way as one that started with a quotation mark to begin with
+				Matcher match = startsDoubleQuotes.matcher(text);
+				if (match.matches()) {
+					// the patterns are set to provide the desired match in match.group(1)
+					text = match.group(1);
+					touchUpAndAddAmerican(text, quotes);	
+				} else {
+					// do nothing
+				}
+
+				
+			// BRITISH QUOTATIONS WITHIN	
+			// if paragraph format is: ....'....'.... (contains single quotes within it)
+			} else if (!americanStyleQuotes) {
+				// remove the first part of the paragraph all the way up to the beginning of the quotation
+				text = text.replaceFirst(leadingNonQuoteBritish, "'");
+				
+				// after the non-quotation part is removed the element can be handled in the 
+				// same way as one that started with a quotation mark to begin with
+				Matcher match = startsSingleQuotes.matcher(text);
+				if (match.matches()) {
+					// the patterns are set to provide the desired match in match.group(1)
+					text = match.group(1);
+					touchUpAndAddBritish(text, quotes);	
+				} else {
+					// do nothing
+				}	
+			}
+		}
+		return quotes;
+	}
+	
+	
+	// These steps are performed frequently above
+	private void touchUpAndAddAmerican(String text, ArrayList<String> quotes) {
+		text = text.replaceAll(notQuotationDouble, " ");
+		quotes.add("\"" + text + "\"");	
+	}
+	private void touchUpAndAddBritish(String text, ArrayList<String> quotes) {
+		text = text.replaceAll(notQuotationSingle, " ");
+		quotes.add("'" + text + "'");	
+	}
+	
 	
 	
 	
