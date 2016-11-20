@@ -21,7 +21,10 @@ public class Tester {
 				
 //		Parser parser = new Parser(book);
 
-				
+		// The following patterns and Strings are used to match regular expression patterns in the text.
+		// All patterns are done twice, once for texts that use double quotation marks as the 
+		// primary token for dialogue, and once for text that use single quotation marks as such.
+		// (This is sometimes referred to American (double) and British (single) style.)
 
 		Pattern allDoubleQuotes = Pattern.compile("[\"](.*)[\"]");
 		Pattern allSingleQuotes = Pattern.compile("[\'](.*)[\']");
@@ -30,14 +33,13 @@ public class Tester {
 		
 		// used to select text that is in but not part of a quotation such as "he said" from "'Hello,' he said"
 		// (this pattern is such that it does not remove characters or words connected with an apostrophe)
-		// the first is used for British style quotations and the second is used for American style quotations
-		String notQuotationSingle = "'+\\W+[^']*\\B'+\\b";
-//		String notQuotationSingle = "'+\\W+[^']*[^\\w]+'+\\b";
+		String notQuotationDouble = "\"+\\W+[^\"]*\\B\"+\\b";
+		String notQuotationSingle = "'+\\W+[^']*\\B'+\\b";		
 
 		
-//		String notQuotationSingle = "'+\\W+[^']*\\W+'+";
-		String notQuotationDouble = "\"+\\W+[^\"]*\\W+\"+";
-		
+//		old String notQuotationDouble = "\"+\\W+[^\"]*\\W+\"+";
+//		old String notQuotationSingle = "'+\\W+[^']*\\W+'+";
+
 		
 		ArrayList<String> quotes = new ArrayList<String>();
 		Book instanceBook = new Book(book.getText());
