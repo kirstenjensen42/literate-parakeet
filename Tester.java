@@ -15,131 +15,187 @@ public class Tester {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		FileReader file = new FileReader("quotes.txt");
+		FileReader file = new FileReader("alice-in-wonderland.txt");
 
 		Book book = new Book(file.getLines());
 				
 //		Parser parser = new Parser(book);
+
 				
+
 		Pattern allDoubleQuotes = Pattern.compile("[\"](.*)[\"]");
 		Pattern allSingleQuotes = Pattern.compile("[\'](.*)[\']");
 		Pattern startsDoubleQuotes = Pattern.compile("[\"](.*)[\"].*");
 		Pattern startsSingleQuotes = Pattern.compile("[\'](.*)[\'].*");
+		
+		// used to select text that is in but not part of a quotation such as "he said" from "'Hello,' he said"
+		// (this pattern is such that it does not remove characters or words connected with an apostrophe)
+		// the first is used for British style quotations and the second is used for American style quotations
+		String notQuotationSingle = "'+\\W+[^']*\\B'+\\b";
+//		String notQuotationSingle = "'+\\W+[^']*[^\\w]+'+\\b";
 
 		
+//		String notQuotationSingle = "'+\\W+[^']*\\W+'+";
+		String notQuotationDouble = "\"+\\W+[^\"]*\\W+\"+";
 		
-//		String text = book.getText().get(0);
-//		System.out.println(text);
-//		text = text.replaceFirst("[^']*\\B'", "'");
-//		System.out.println(text);
-		
-
 		
 		ArrayList<String> quotes = new ArrayList<String>();
+		Book instanceBook = new Book(book.getText());
 		
-		for (int i = 0; i < book.getText().size(); i++) {
+		// for every element in the book (each element holds one paragraph as a string)...
+		for (int i = 0; i < instanceBook.getText().size(); i++) {
 			
+			// Most of the books in this program use American style punctuation for quotes, but 
+			// not all. This boolean is assumed true but it is set as false if a paragraph appears 
+			// that starts and ends with single quotes.
 			boolean americanStyleQuotes = true;
 			
-			String text = book.getText().get(i);
+			// let's refer to the current String as "text"
+			String text = instanceBook.getText().get(i);
 			
-			////// Format: "...."
-			if ( book.getText().get(i).startsWith("\"") && book.getText().get(i).endsWith("\"") ) {
+			////// Format: "...." (starts and ends with double quotes)
+			if ( text.startsWith("\"") && text.endsWith("\"") ) {
+				
+				// the presence of a paragraph that starts and ends with double quotes is 
+				// used to indicate that the rest of the book will be in American style
 				americanStyleQuotes = true;
+				
+				// compares to pattern set above
 				Matcher match = allDoubleQuotes.matcher(text);
-				quotes.add("All DQ:" + text);
 				if (match.matches()) {
+					// the pattern was set to provide a match that lands in match.group(1)
 					text = match.group(1);
-					quotes.add("   Second match: " + text);
-					text = text.replaceAll("[\"](.*)[\"]", " ");
-					quotes.add("   After replaceAll: " + text);					
-					book.getText().remove(i);
+					// replace all words that aren't part of one of the quotations with a space
+					text = text.replaceAll(notQuotationDouble, " ");
+					// add final version with quotation marks as an element in the ArrayList of quotes 
+					quotes.add("\"" + text + "\"");	
+					// remove element from Book to mark analysis is complete
+					instanceBook.getText().remove(i);
+					// count i back by one since an element was removed
 					i--;
 				} else {
 					quotes.add("   DIDN'T WORK!");
 				}
 			
-			///// Format '....'
-			} else if (book.getText().get(i).startsWith("\'") && book.getText().get(i).endsWith("\'")) {
-				americanStyleQuotes = true;
+			///// Format '....' (starts and ends with single quotation marks)
+			} else if (text.startsWith("\'") && text.endsWith("\'")) {
+				
+				// the presence of a paragraph that starts and ends with single quotes is 
+				// used to indicate that the rest of the book will be in British style
+				americanStyleQuotes = false;
 				Matcher match = allSingleQuotes.matcher(text);
-				quotes.add("All SQ:" + text);
 				if (match.matches()) {
+					// the pattern was set to provide a match that lands in match.group(1)
 					text = match.group(1);
-					quotes.add("   Second match: " + text);
-					text = text.replaceAll("[\'](.*)[\']", " ");
-					quotes.add("   After replaceAll: " + text);					
-					book.getText().remove(i);
+					quotes.add("Test: " + text);
+					// replace all words that aren't part of one of the quotations with a space
+					text = text.replaceAll(notQuotationSingle, " ");
+					// add final version with quotation marks as an element in the ArrayList of quotes 
+					quotes.add("'" + text + "'");	
+					// remove element from Book to mark analysis is complete
+					instanceBook.getText().remove(i);
+					// count i back by one since an element was removed
 					i--;
 				} else {
 					quotes.add("   DIDN'T WORK!");
 				}
 				
-			/// Format "..."...
-			} else if ( book.getText().get(i).startsWith("\"") ) {
-				quotes.add("Starts with DQ:" + text);
-				Matcher match = startsDoubleQuotes.matcher(text);
-				if (match.matches()) {
-					text = match.group(1);
-					quotes.add("   Second match: " + text);
-					text = text.replaceAll("[\"](.*)[\"]", " ");
-					quotes.add("   After replaceAll: " + text);					
-					book.getText().remove(i);
+			/// Format "..."... (starts with double quotes)
+			} else if ( text.startsWith("\"") ) {
+				
+				// if the paragraph opens a quotation and no other quotation appears in the paragraph:
+				// the entire paragraph is made into one quotation
+				int count = 0;
+				for ( int h = 1; h < text.length(); h++ ) {
+					if ( text.substring(h,h+1).equalsIgnoreCase("\"") ) {
+						count++;
+					}
+				}
+				if ( count == 0 ) {
+					quotes.add(text + "\"");
+					instanceBook.getText().remove(i);
 					i--;
 				} else {
-					quotes.add("   DIDN'T WORK!");
+				
+					Matcher match = startsDoubleQuotes.matcher(text);
+					if (match.matches()) {
+						// the pattern was set to provide a match that lands in match.group(1)
+						text = match.group(1);
+						// replace all words that aren't part of one of the quotations with a space
+						text = text.replaceAll(notQuotationDouble, " ");
+						// add final version with quotation marks as an element in the ArrayList of quotes 
+						quotes.add("\"" + text + "\"");	
+						// remove element from Book to mark analysis is complete
+						instanceBook.getText().remove(i);
+						// count i back by one since an element was removed
+						i--;
+					} else {
+						quotes.add("   DIDN'T WORK!");
+					}
 				}
+			/// Format '...'... (starts with single quotes)
+			} else if ( text.startsWith("\'") ) {
 				
-				
-			} else if ( book.getText().get(i).startsWith("\'") ) {
-				quotes.add("Starts with SQ:" + text);
-				Matcher match = startsSingleQuotes.matcher(text);
-				if (match.matches()) {
-					text = match.group(1);
-					quotes.add("   Second match: " + text);
-					text = text.replaceAll("[\'](.*)[\']", " ");
-					quotes.add("   After replaceAll: " + text);					
-					book.getText().remove(i);
+				// if the paragraph opens a quotation and no other quotation appears in the paragraph:
+				// the entire paragraph is made into one quotation
+				int count = 0;
+				for ( int h = 1; h < text.length(); h++ ) {
+					if ( text.substring(h,h+1).equalsIgnoreCase("'") ) {
+						count++;
+					}
+				}
+				if ( count == 0 ) {
+					quotes.add(text + "'");
+					instanceBook.getText().remove(i);
 					i--;
 				} else {
-					quotes.add("   DIDN'T WORK!");
+				
+					Matcher match = startsSingleQuotes.matcher(text);
+					if (match.matches()) {
+						// the pattern was set to provide a match that lands in match.group(1)
+						text = match.group(1);
+						// replace all words that aren't part of one of the quotations with a space
+						text = text.replaceAll(notQuotationSingle, " ");
+						// add final version with quotation marks as an element in the ArrayList of quotes 
+						quotes.add("'" + text + "'");					
+						instanceBook.getText().remove(i);
+						i--;
+					} else {
+						quotes.add("   DIDN'T WORK!");
+					}
 				}
-					
+						
 			} else if (americanStyleQuotes) {
-				quotes.add("DQ in the middle: " + text);
+				// remove the first part of the paragraph all the way up to the beginning of the quotation
 				text = text.replaceFirst("[^\"]*\\B\"", "\"");
-				quotes.add("    cut off beginning:" + text);
+				// after the non-quotation part is removed the element can be handled in the 
+				// same way as one that started with a quotation mark to begin with
 				Matcher match = startsDoubleQuotes.matcher(text);
 				if (match.matches()) {
 					text = match.group(1);
-					quotes.add("   Second match: " + text);
-					text = text.replaceAll("\"+\\W+[^\"]*\\W+\"+", " ");
-					quotes.add("   After replaceAll: " + text);					
-					book.getText().remove(i);
+					text = text.replaceAll(notQuotationDouble, " ");
+					quotes.add("\"" + text + "\"");					
+					instanceBook.getText().remove(i);
 					i--;
 				} else {
 					quotes.add("   DIDN'T WORK!");
 				}
 			} else if (!americanStyleQuotes) {
-				quotes.add("SQ in the middle: " + text);
+				// remove the first part of the paragraph all the way up to the beginning of the quotation
 				text = text.replaceFirst("[^']*\\B'", "'");
-				quotes.add("    cut off beginning:" + text);
+				// after the non-quotation part is removed the element can be handled in the 
+				// same way as one that started with a quotation mark to begin with
 				Matcher match = startsSingleQuotes.matcher(text);
 				if (match.matches()) {
 					text = match.group(1);
-					quotes.add("   Second match: " + text);
-					text = text.replaceAll("'+\\W+[^']*\\W+'+", " ");
-					quotes.add("   After replaceAll: " + text);					
-					book.getText().remove(i);
+					text = text.replaceAll(notQuotationSingle, " ");
+					quotes.add("'" + text + "'");					
+					instanceBook.getText().remove(i);
 					i--;
 				} else {
 					quotes.add("   DIDN'T WORK!");
 				}
 			}
-		}
-		
-		for (int k=0; k<quotes.size(); k++) {
-			System.out.println(quotes.get(k));
 		}
 		
 		
@@ -152,45 +208,4 @@ public class Tester {
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-//String text = "There was quiet satifaction in the butler's voice. It was even possible, "
-//		+ "he was reflecting, that this young man might be struck by lightning. If so, " +
-//		"it was all right with Beach. As far as he was concerned, Nature's awful majesty " +
-//		"could go to the limit.";
-//
-//HashMap< String, Integer > occurances = new HashMap< String, Integer >();
-//
-//ArrayList<String> letters = new ArrayList<String>();
-//char[] chars = text.toCharArray();
-//for ( int i = 0; i < chars.length; i++ ) {
-//	if (   String.valueOf(chars[i]).matches( "(\\w)" )   ) {
-//		letters.add(String.valueOf(chars[i]));
-//	} else {
-//		letters.add("*" + String.valueOf(chars[i]));
-//	}
-//}
-//
-//for ( int i = 0; i < letters.size(); i++ ) {
-//	String iKey = letters.get(i);
-//	if ( occurances.containsKey(iKey) ) {
-//		occurances.put(iKey, occurances.get(iKey) + 1);
-//	} else 
-//		occurances.put(iKey,1);
-//}
-//
-////for ( String key : occurances.keySet() ) {
-////	System.out.println( key + ": " + occurances.get(key) );
-////}
 
