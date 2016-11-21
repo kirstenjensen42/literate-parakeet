@@ -178,7 +178,7 @@ public class Parser {
 	 * 
 	 * @return an ArrayList of Strings with each String containing one quote.
 	 */
-	public ArrayList<String> getQuotations() {
+	public ArrayList<String> getQuotes() {
 		
 
 //		Pattern allDoubleQuotes = Pattern.compile("[\"](.*)[\"]");
