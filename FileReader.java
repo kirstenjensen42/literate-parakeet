@@ -38,12 +38,14 @@ public class FileReader {
 			
 			File inputFile = new File( fileName );
 			
-			scan = new Scanner( inputFile );
+			scan = new Scanner(inputFile, "UTF-8");
 			
 			while ( scan.hasNextLine() ) {
 				String line = scan.nextLine();
 				lines.add(line);
 			}
+			
+			lines.size();
 			
 		} catch ( FileNotFoundException fnfe ){
 			

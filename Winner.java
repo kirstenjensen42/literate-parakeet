@@ -1,4 +1,10 @@
 
+/**
+ * This is the Winner class. It is used by BookAnalyzer as the value of a HashMap. It holds data 
+ * for a String and the number of occurrences it had.
+ * @author kirstenjensen42
+ *
+ */
 public class Winner {
 	
 	int occurrences;
@@ -11,7 +17,9 @@ public class Winner {
 		
 	}
 
+	
 	/**
+	 * The getter method for occurences
 	 * @return the occurrences
 	 */
 	public int getOccurrences() {
@@ -19,6 +27,7 @@ public class Winner {
 	}
 
 	/**
+	 * The getter method for the String item
 	 * @return the item
 	 */
 	public String getItem() {

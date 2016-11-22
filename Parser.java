@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  *
  */
 public class Parser {
-	
+		
 	private Book book;
 	
 	private ArrayList<String> quotes;
@@ -35,7 +35,12 @@ public class Parser {
 	private String leadingNonQuoteAmerican = "[^\"]*\\B\"";
 	private String leadingNonQuoteBritish = "[^']*\\B'";
 	
+	
+	
+	
 	/**
+	 * CONSTRUCTOR
+	 * 
 	 * This is the constructor for the Parser class. It takes a book as an argument.
 	 * The book in an instance of the parser class can be parsed in various ways through its 
 	 * public methods. 
@@ -46,8 +51,31 @@ public class Parser {
 		
 	}
 	
-	
-	
+	/** 
+	 * Get the PROPER NOUNS
+	 * 
+	 * This method offers an approximation of most of the main characters in the book by finding 
+	 * words that begin with capital letters and do not follow a ". ". This removes words that 
+	 * are capitalized because they begin as sentence.
+	 * 
+	 * Note: this also removes names that always follow a title abbreviation with a period, which means 
+	 * Mr. Wooster will not be matched. There is a loss of some characters appearing at all on the list 
+	 * because of this.
+	 * @return
+	 */
+	public ArrayList<String> getProperNouns() {
+		ArrayList<String> properNouns = new ArrayList<String>();
+		Pattern capitalWord = Pattern.compile("[^\\W] ([A-Z]{1}[a-z]+ +[A-Z]*[a-z]*)");
+		
+		for ( int b = 0; b < book.getText().size(); b++ ) {
+			Matcher match = capitalWord.matcher(book.getText().get(b));
+			while (match.find()) {
+				String check = match.group(1).replaceAll(" +[a-z]+\\w*\\W*", "");
+				properNouns.add(check);
+			}
+		}
+		return properNouns;
+	}
 	
 	
 	/**
